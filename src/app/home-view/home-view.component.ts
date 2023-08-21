@@ -11,11 +11,11 @@ const constraints = {
     height: { min: heightVideo, ideal: heightVideo, max: heightVideo },
     deviceId: myWebCam,
   },
-  audio: false/*{
+  audio: false /*{
     echoCancellation: true,
     noiseSuppression: true,
     autoGainControl: true,
-  },*/
+  },*/,
 };
 
 const blobVideoType = { type: 'video/webm' };
@@ -32,6 +32,8 @@ export class HomeViewComponent implements OnInit {
   blobsRecorded: Blob | any = [];
   startRecording: boolean = false;
   isRecorded: boolean = false;
+  snapshotBase64: string = '';
+  mediaRecorder: any;
 
   async ngOnInit(): Promise<void> {
     const video: any = document.getElementById('video');
@@ -59,45 +61,41 @@ export class HomeViewComponent implements OnInit {
     if (!ctx) return console.error('No context');
 
     ctx.drawImage(video, 0, 0, widthVideo, heightVideo);
+    this.snapshotBase64 = snapshot.toDataURL();
+
+    // const imgTag: any = document.getElementById('imgTag');
+    // if (imgTag) imgTag.src = snapshot.toDataURL();
   }
 
   recordingVideo() {
-    const downloadLink: any = document.getElementById('downloadLink');
     if (!this.stream) return console.error('No cameraStream');
 
-    // set MIME type of recording as video/webm
-    const mediaRecorder = new MediaRecorder(this.stream, {
-      mimeType: 'video/webm',
-    });
-    console.log('mediaRecorder', mediaRecorder);
+    if (!this.startRecording) {
+      const mediaRecorder = new MediaRecorder(this.stream, {
+        mimeType: 'video/webm',
+      });
+      console.log('mediaRecorder', mediaRecorder);
 
-    if (this.startRecording) {
-      console.log('mediaRecorder stop within if');
+      this.mediaRecorder = mediaRecorder;
 
-      this.startRecording = false;
-      return mediaRecorder.stop();
-    }
+      mediaRecorder.addEventListener('dataavailable', (e) => {
+        const downloadLink: any = document.getElementById('downloadLink');
+        console.log('downloadLink', downloadLink);
+        let video_local = URL.createObjectURL(e.data);
+        console.log('video_local', video_local);
+        downloadLink.href = video_local;
+        downloadLink.download = 'trial.webm';
+      });
 
-    // event : new recorded video blob available
-    mediaRecorder.addEventListener('dataavailable', (e) =>
-      this.blobsRecorded.push(e.data)
-    );
+      mediaRecorder.start();
 
-    // event : recording stopped & all blobs sent
-    mediaRecorder.addEventListener('stop', () => {
-      console.log('mediaRecorder stopped');
-
-      // create local object URL from the recorded video blobs
-      let video_local = URL.createObjectURL(
-        new Blob(this.blobsRecorded, blobVideoType)
-      );
-      if (downloadLink) downloadLink.href = video_local;
+      return (this.startRecording = true);
+    } else if (this.startRecording) {
+      this.mediaRecorder.stop();
+      this.stream.getTracks().forEach((track: any) => track.stop());
       this.isRecorded = true;
-    });
 
-    // start recording with each recorded blob having 1 second video
-    mediaRecorder.start(1000);
-
-    this.startRecording = true;
+      return (this.startRecording = false);
+    }
   }
 }

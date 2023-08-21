@@ -18,21 +18,26 @@
       >
         Take a snapshot
       </button>
-      <canvas width="320" height="240" class="mt-5 d-block" id="snapshot"></canvas>
+      <canvas
+        width="320"
+        height="240"
+        class="mt-5 d-block"
+        id="snapshot"
+      ></canvas>
     </div>
 
     <div class="col-4">
       <h2>Video</h2>
       <button
         (click)="recordingVideo()"
-        class="btn btn-outline-success btn-sm"
+        class="btn btn-outline-success btn-sm btn-recording"
         id="startRecordVideo"
       >
         <span *ngIf="!startRecording">Start</span>
         <span *ngIf="startRecording">Stop</span>
         Recording Video
       </button>
-      <canvas class="mt-5 d-block" id=""></canvas>
+      <canvas width="320" height="240" class="mt-5 d-block" id=""></canvas>
       <a
         class="btn btn-primary"
         type="button"
@@ -47,7 +52,7 @@
       <button class="btn btn-outline-secondary btn-sm" id="startRecordAudio">
         Start Recording Audio
       </button>
-      <canvas class="mt-5 d-block" id=""></canvas>
+      <canvas width="320" height="240" class="mt-5 d-block" id=""></canvas>
     </div>
   </div>
 </div>
