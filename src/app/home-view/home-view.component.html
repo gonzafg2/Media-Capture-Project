@@ -4,18 +4,23 @@
       <h1 class="my-5">Media Capture Project works!</h1>
     </div>
     <div class="col-12">
-      <section id="video" autoplay></section>
+      <video id="video" height="240" autoplay></video>
     </div>
   </div>
 
   <div class="row my-5">
     <div class="col-4">
       <h2>Snapshot</h2>
-      <button class="btn btn-outline-primary btn-sm" id="takeSnapshot">
+      <button
+        (click)="takeSnapshot()"
+        class="btn btn-outline-primary btn-sm"
+        id="takeSnapshot"
+      >
         Take a snapshot
       </button>
-      <canvas class="mt-5 d-block" id=""></canvas>
+      <canvas width="320" height="240" class="mt-5 d-block" id="snapshot"></canvas>
     </div>
+
     <div class="col-4">
       <h2>Video</h2>
       <button
@@ -28,8 +33,15 @@
         Recording Video
       </button>
       <canvas class="mt-5 d-block" id=""></canvas>
-      <a class="btn btn-primary" type="button" id="downloadLink" *ngIf="isRecorded">Download video</a>
+      <a
+        class="btn btn-primary"
+        type="button"
+        id="downloadLink"
+        *ngIf="isRecorded"
+        >Download video</a
+      >
     </div>
+
     <div class="col-4">
       <h2>Audio</h2>
       <button class="btn btn-outline-secondary btn-sm" id="startRecordAudio">

@@ -11,11 +11,11 @@ const constraints = {
     height: { min: heightVideo, ideal: heightVideo, max: heightVideo },
     deviceId: myWebCam,
   },
-  audio: {
+  audio: false/*{
     echoCancellation: true,
     noiseSuppression: true,
     autoGainControl: true,
-  },
+  },*/
 };
 
 const blobVideoType = { type: 'video/webm' };
@@ -28,29 +28,22 @@ const blobVideoType = { type: 'video/webm' };
 export class HomeViewComponent implements OnInit {
   constructor() {}
 
-  cameraStream: MediaStream | null = null;
+  stream: MediaStream | null = null;
   blobsRecorded: Blob | any = [];
   startRecording: boolean = false;
   isRecorded: boolean = false;
 
   async ngOnInit(): Promise<void> {
+    const video: any = document.getElementById('video');
     const videoInit = async () => {
-      const mediaStream: HTMLElement | null = document.getElementById('video');
-      if (!mediaStream) return console.error('No mediaStream');
-
       try {
         const mediaDevices = navigator.mediaDevices;
 
         // const devices = await mediaDevices.enumerateDevices();
         // console.log('devices', devices);
 
-        const media = await mediaDevices.getUserMedia(constraints);
-        this.cameraStream = media;
-
-        const video: HTMLVideoElement = document.createElement('video');
-        video.autoplay = true;
-        video.srcObject = media;
-        mediaStream.appendChild(video);
+        this.stream = await mediaDevices.getUserMedia(constraints);
+        video.srcObject = this.stream;
       } catch (error) {
         console.error(error);
       }
@@ -58,12 +51,22 @@ export class HomeViewComponent implements OnInit {
     await videoInit();
   }
 
+  takeSnapshot() {
+    const video: any = document.getElementById('video');
+    const snapshot: any = document.getElementById('snapshot');
+    const ctx = snapshot.getContext('2d');
+
+    if (!ctx) return console.error('No context');
+
+    ctx.drawImage(video, 0, 0, widthVideo, heightVideo);
+  }
+
   recordingVideo() {
     const downloadLink: any = document.getElementById('downloadLink');
-    if (!this.cameraStream) return console.error('No cameraStream');
+    if (!this.stream) return console.error('No cameraStream');
 
     // set MIME type of recording as video/webm
-    const mediaRecorder = new MediaRecorder(this.cameraStream, {
+    const mediaRecorder = new MediaRecorder(this.stream, {
       mimeType: 'video/webm',
     });
     console.log('mediaRecorder', mediaRecorder);
