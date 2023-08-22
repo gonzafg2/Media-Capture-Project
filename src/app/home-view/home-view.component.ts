@@ -4,6 +4,12 @@ const myWebCam =
 
 const widthVideo = 320;
 const heightVideo = 240;
+const videoOptions = {
+  mimeType: 'video/webm;codecs=vp8,opus',
+};
+const audioOptions = {
+  mimeType: 'audio/webm',
+};
 
 const constraints = {
   video: {
@@ -11,14 +17,8 @@ const constraints = {
     height: { min: heightVideo, ideal: heightVideo, max: heightVideo },
     deviceId: myWebCam,
   },
-  audio: false /*{
-    echoCancellation: true,
-    noiseSuppression: true,
-    autoGainControl: true,
-  },*/,
+  audio: true,
 };
-
-const blobVideoType = { type: 'video/webm' };
 
 @Component({
   selector: 'app-home-view',
@@ -29,30 +29,33 @@ export class HomeViewComponent implements OnInit {
   constructor() {}
 
   stream: MediaStream | null = null;
-  blobsRecorded: Blob | any = [];
   startRecording: boolean = false;
+  startRecordingAudio: boolean = false;
   isRecorded: boolean = false;
+  isRecordedAudio: boolean = false;
   snapshotBase64: string = '';
-  mediaRecorder: any;
+  mediaRecorder: MediaRecorder | null = null;
+  mediaRecorderAudio: MediaRecorder | null = null;
+  videoRecording: string = '';
+  audioRecording: string = '';
 
   async ngOnInit(): Promise<void> {
-    const video: any = document.getElementById('video');
-    const videoInit = async () => {
-      try {
-        const mediaDevices = navigator.mediaDevices;
-
-        // const devices = await mediaDevices.enumerateDevices();
-        // console.log('devices', devices);
-
-        this.stream = await mediaDevices.getUserMedia(constraints);
-        video.srcObject = this.stream;
-      } catch (error) {
-        console.error(error);
-      }
-    };
-    await videoInit();
+    await this.mediaInit();
   }
+  async mediaInit() {
+    const video: any = document.getElementById('video');
+    try {
+      const mediaDevices = navigator.mediaDevices;
 
+      // const devices = await mediaDevices.enumerateDevices();
+      // console.log('devices', devices);
+
+      this.stream = await mediaDevices.getUserMedia(constraints);
+      video.srcObject = this.stream;
+    } catch (error) {
+      console.error(error);
+    }
+  }
   takeSnapshot() {
     const video: any = document.getElementById('video');
     const snapshot: any = document.getElementById('snapshot');
@@ -67,35 +70,69 @@ export class HomeViewComponent implements OnInit {
     // if (imgTag) imgTag.src = snapshot.toDataURL();
   }
 
-  recordingVideo() {
-    if (!this.stream) return console.error('No cameraStream');
+  async recordingVideo() {
+    if (!this.stream) return console.error('No mediaStream');
 
-    if (!this.startRecording) {
-      const mediaRecorder = new MediaRecorder(this.stream, {
-        mimeType: 'video/webm',
-      });
-      console.log('mediaRecorder', mediaRecorder);
-
-      this.mediaRecorder = mediaRecorder;
-
-      mediaRecorder.addEventListener('dataavailable', (e) => {
-        const downloadLink: any = document.getElementById('downloadLink');
-        console.log('downloadLink', downloadLink);
-        let video_local = URL.createObjectURL(e.data);
-        console.log('video_local', video_local);
-        downloadLink.href = video_local;
-        downloadLink.download = 'trial.webm';
-      });
-
-      mediaRecorder.start();
-
-      return (this.startRecording = true);
-    } else if (this.startRecording) {
-      this.mediaRecorder.stop();
-      this.stream.getTracks().forEach((track: any) => track.stop());
+    if (this.startRecording) {
+      this.mediaRecorder?.stop();
+      // this.stream.getTracks().forEach((track: any) => track.stop());
       this.isRecorded = true;
-
       return (this.startRecording = false);
     }
+
+    if (!this.stream.active) await this.mediaInit();
+    const mediaRecorder = new MediaRecorder(this.stream, videoOptions);
+    this.mediaRecorder = mediaRecorder;
+
+    mediaRecorder.addEventListener('dataavailable', (e) => {
+      const downloadLink: any = document.getElementById('downloadLink');
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setTimeout(() => {
+          this.videoRecording = e.target?.result as string;
+        }, 1000);
+      };
+      reader.readAsDataURL(e.data);
+
+      downloadLink.href = URL.createObjectURL(e.data);
+      downloadLink.download = 'trialVideo.webm';
+    });
+
+    this.mediaRecorder.start();
+    this.startRecording = true;
+  }
+
+  async recordingAudio() {
+    return;
+    /*
+    if (!this.stream) return console.error('No mediaStream');
+
+    if (this.startRecordingAudio && this.mediaRecorderAudio) {
+      this.mediaRecorderAudio.stop();
+      // this.stream.getTracks().forEach((track: any) => track.stop());
+      this.isRecordedAudio = true;
+      return (this.startRecordingAudio = false);
+    }
+
+    if (!this.stream.active) await this.mediaInit();
+    this.mediaRecorderAudio = new MediaRecorder(this.stream, audioOptions);
+    console.log('this.mediaRecorderAudio', this.mediaRecorderAudio);
+
+    this.mediaRecorderAudio.addEventListener('dataavailable', (e) => {
+      const downloadLinkAudio: any =
+        document.getElementById('downloadLinkAudio');
+
+      const reader = new FileReader();
+      reader.onload = () => (this.audioRecording = reader.result as string);
+      reader.readAsDataURL(e.data);
+
+      downloadLinkAudio.href = URL.createObjectURL(e.data);
+      downloadLinkAudio.download = 'trialAudio.webm';
+    });
+
+    this.mediaRecorderAudio?.start();
+    this.startRecordingAudio = true;
+    */
   }
 }

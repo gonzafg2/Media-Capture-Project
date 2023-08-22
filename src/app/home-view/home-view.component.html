@@ -37,7 +37,16 @@
         <span *ngIf="startRecording">Stop</span>
         Recording Video
       </button>
-      <canvas width="320" height="240" class="mt-5 d-block" id=""></canvas>
+      <video
+        autoplay
+        loop
+        width="320"
+        height="240"
+        class="mt-5 d-block"
+        id="videoRecordingNode"
+      >
+      <source [src]="videoRecording" type="video/webm">
+    </video>
       <a
         class="btn btn-primary"
         type="button"
@@ -49,10 +58,23 @@
 
     <div class="col-4">
       <h2>Audio</h2>
-      <button class="btn btn-outline-secondary btn-sm" id="startRecordAudio">
-        Start Recording Audio
+      <button
+        (click)="recordingAudio()"
+        class="btn btn-outline-secondary btn-sm"
+        id="startRecordAudio"
+      >
+        <span *ngIf="!startRecordingAudio">Start</span>
+        <span *ngIf="startRecordingAudio">Stop</span>
+        Recording Audio
       </button>
       <canvas width="320" height="240" class="mt-5 d-block" id=""></canvas>
+      <a
+        class="btn btn-primary"
+        type="button"
+        id="downloadLinkAudio"
+        *ngIf="isRecordedAudio"
+        >Download audio</a
+      >
     </div>
   </div>
 </div>
